@@ -29,8 +29,8 @@ spec:
           containerPort: 30333
         resources:
           requests:
-            cpu: 1000m
-            memory: 2Gi
+            cpu: 500m
+            memory: 1Gi
         command: ["/bin/bash"]
         args: ["-c", "/run-node.sh --node-type=full --name=haidv-fullnode"]
         # livenessProbe:
