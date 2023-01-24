@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fullnode
+  namespace: demo
+spec:
+  selector:
+    matchLabels:
+      app: fullnode
+  replicas: 1
+  serviceName: fullnode
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: fullnode
+    spec:
+      containers:
+      - image: atactr/automata:contextfree-v0.1.2-rc5
+        imagePullPolicy: Always
+        name: fullnode
+        ports:
+        - name: http
+          containerPort: 9933
+        - name: websocket
+          containerPort: 9944
+        - name: p2p
+          containerPort: 30333
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 2Gi
+        command: ["/bin/bash"]
+        args: ["-c", "/run-node.sh --node-type=full --name=haidv-fullnode"]
+        # livenessProbe:
+        #   # Because of I dont know what exactly health check for the container, 
+        #   # I put this TCP probe into this manifest to check the health
+        #   # Although this probe is not actually good enough to check.
+        #   tcpSocket:
+        #     port: 9933
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 2
+        #   timeoutSeconds: 1
+        # readinessProbe:
+        #   tcpSocket:
+        #     port: 9933
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 2
+        #   timeoutSeconds: 1
+        volumeMounts:
+        - name: chain
+          mountPath: /data
+  volumeClaimTemplates: # Volume definitions
+  - metadata:
+      name: chain
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "fullnode-storage-class"
+      resources:
+        requests:
+          storage: 10Gi
